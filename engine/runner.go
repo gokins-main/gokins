@@ -251,6 +251,12 @@ func (c *baseRunner) GenEnv(buildId, jobId string, env utils.EnvVal) error {
 		return err
 	}
 	dir := filepath.Join(comm.WorkPath, common.PathBuild, job.step.BuildId, common.PathJobs, job.step.Id)
+	
+	err = os.MkdirAll(dir, 0640)
+	if err !=nil {
+		return err
+	}
+
 	err = ioutil.WriteFile(filepath.Join(dir, "build.env"), bts, 0640)
 	return err
 }
