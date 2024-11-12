@@ -14,6 +14,13 @@ type Config struct {
 		Driver string `yaml:"driver"`
 		Url    string `yaml:"url"`
 	} `yaml:"datasource"`
+  Email struct {
+    Host string `yaml:"host,omitempty"`
+    Port int    `yaml:"port,omitempty"`
+    User string `yaml:"user,omitempty"`
+    Pass string `yaml:"pass,omitempty"`
+    Sender string `yaml:"sender,omitempty"`
+  } `yaml:"email,omitempty"`
 }
 
 const DATASOURCE_DRIVER_MYSQL = "mysql"

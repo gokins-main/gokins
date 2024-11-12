@@ -15,7 +15,9 @@ import (
 	"github.com/gokins/gokins/models"
 	"github.com/gokins/gokins/service"
 	"github.com/gokins/gokins/util"
+	"github.com/gokins/gokins/util/email"
 	hbtp "github.com/mgr9525/HyperByte-Transfer-Protocol"
+	"github.com/sirupsen/logrus"
 )
 
 type RuntimeController struct{}
@@ -62,6 +64,45 @@ func (RuntimeController) stages(c *gin.Context, m *hbtp.Map) {
 			}
 		}
 	}
+
+	if comm.Cfg.Email.Host != "" {//has email setting
+
+    content :=""
+    NeedSendEmail := false
+		for _, v := range stages {
+			if v.Error != "" {
+        NeedSendEmail =true
+        name := v.DisplayName
+        if name == "" {
+          name = v.Name
+        }
+        content += "<p>"+name+":"+v.Error+"</p>"
+			}
+		}
+    if NeedSendEmail {
+
+      pv := &model.TPipelineVersion{}
+      ok, _ := comm.Db.Where("id=? and deleted != 1", pvId).Get(pv)
+      if ok {
+        subject := "Build Error: "+pv.PipelineName+" "+pv.Version
+        to := make([]string,0)
+
+        info, ok := service.GetUserInfo(pv.Uid)
+        if ok {
+          to = append(to, info.Email)
+          err := email.SendEmail( to, subject, content)
+        if err != nil {
+          logrus.Error(err)
+        }
+        }
+
+
+      }
+
+
+    }
+	}
+
 	c.JSON(200, hbtp.Map{
 		"ids":    ids,
 		"stages": stages,
